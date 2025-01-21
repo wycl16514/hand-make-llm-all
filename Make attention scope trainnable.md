@@ -111,5 +111,52 @@ word vector for word 'jim': tensor([0.2992, 0.8866])
 
 We can apply the process for all the words in the sentence by wrapping the whole process into a class as following:
 ```py
-
+'''
+Three matries are bollowed from databases, the query used to indicate what you are looking for,
+key used to confine the info in given scope, and value is the details in the given scope. For example
+you are going to find some thing to watch, then the query can be "movie", the selections for 
+key can be "action, hollow, love, documentary", if the key is "action", then the value can be 
+list of names of action movies
+'''
+import torch.nn as nn
+class SelfAttentionV1(nn.Module):
+  def __init__(self, input_vec_length, output_vec_lenth):
+    super().__init__()
+    #randomize the value for three matries
+    self.W_query = nn.Parameter(torch.rand(input_vec_length, output_vec_lenth))
+    self.W_key = nn.Parameter(torch.rand(input_vec_length, output_vec_lenth))
+    self.W_value = nn.Parameter(torch.rand(input_vec_length, output_vec_lenth))
+  
+  def forward(self, inputs):
+    '''
+    inputs are words for the sentences, each word in the sentence will go through the process
+    above, then each word can be the query word
+    '''
+    keys = inputs @ self.W_key
+    values = inputs @ self.W_value
+    query = inputs @ self.W_query
+    attn_scores = query @ keys.T
+    attn_weights = torch.softmax(attn_scores / keys.shape[-1] ** 0.5, dim = -1)
+    new_word_vecs = attn_weights @ values
+    return new_word_vecs
 ```
+Then we can run above call by using following code:
+
+```py
+torch.manual_seed(123)
+attn_process = SelfAttentionV1(3, 2)
+attn_process.forward(inputs)
+```
+using above code we get following result:
+
+```py
+tensor([[0.2992, 0.8866],
+        [0.3058, 0.9051],
+        [0.3124, 0.9233],
+        [0.3188, 0.9412],
+        [0.3251, 0.9588],
+        [0.3312, 0.9760],
+        [0.3372, 0.9927],
+        [0.3430, 1.0089]], grad_fn=<MmBackward0>)
+```
+
