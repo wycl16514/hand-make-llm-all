@@ -159,4 +159,92 @@ tensor([[0.2992, 0.8866],
         [0.3372, 0.9927],
         [0.3430, 1.0089]], grad_fn=<MmBackward0>)
 ```
+As you can see from above result, they are new word vectors for "jim" "and", "john" and so on. Let's see how to enhance to effieciency of above code, here we need to introduce some linear operation
+from linear algebra, you may have seen linear euqtions with multiple variables like:
+    a_11 * x1 + a_12 * x2 + .... a_1n * x_n + b1  = y_1
+    .....
+    a_nn * x_1 + a_n2 * x2 + .... a_nn * x_n + bn = y_n
+
+For above equtions, we can represent it by using matrix:
+
+Y = X @ A^T + B 
+
+where Y is [y_1, y_2, ... y_n], x is [x_1, x_2, ... x_n], and A is matrix and the first column is [a_11, a ..1n], second column is [a_21, .., a_2n] and so on, we can given names to B, X and A as
+B is bias, the the length of Y is out_features, and the numbe of x that is the length of column of matrix A is called in_features, we can construct above linear equations with number of x set to 5
+and number of set to 3 by following code:
+
+```py
+import torch
+import torch.nn as nn
+
+'''
+number for x is 5, and number for y is 3
+'''
+linear_layer = nn.Linear(in_features = 5, out_features = 3, bias = True)
+print(f"Matrix A is : ", linear_layer.weight)
+print(f"B is : ", linear_layer.bias)
+
+#[x1,...x5]
+x = torch.randn(1, 5) 
+print(f"x is : {x}")
+print(f"y is : {linear_layer(x)}")
+```
+Running above code we get following result:
+
+```py
+Matrix A is :  Parameter containing:
+tensor([[ 0.3620,  0.1702, -0.2314, -0.2344, -0.1186],
+        [-0.3954,  0.4148, -0.0920, -0.0579, -0.4362],
+        [ 0.1407,  0.2512, -0.0271,  0.1622,  0.1007]], requires_grad=True)
+B is :  Parameter containing:
+tensor([-0.0858,  0.0015,  0.0408], requires_grad=True)
+x is : tensor([[-0.4950, -1.3638, -1.2959,  0.5380, -0.3010]])
+y is : tensor([[-0.2877, -0.1490, -0.2794]], grad_fn=<AddmmBackward0>)
+```
+
+Then we can use nn.Linear to generate W_query, W_key, W_values, and we get the improve version SelfAttentionV2 as following:
+```py
+
+import torch.nn as nn
+class SelfAttentionV2(nn.Module):
+  def __init__(self, input_vec_length, output_vec_lenth, bias = False):
+    super().__init__()
+    #randomize the value for three matries
+    self.W_query = nn.Linear(in_features = input_vec_length, out_features = output_vec_lenth, bias = bias)
+    self.W_key = nn.Linear(in_features = input_vec_length, out_features = output_vec_lenth, bias = bias)
+    self.W_value = nn.Linear(in_features = input_vec_length, out_features = output_vec_lenth, bias = bias)
+  
+  def forward(self, inputs):
+    '''
+    inputs are words for the sentences, each word in the sentence will go through the process
+    above, then each word can be the query word
+    '''
+
+    keys = self.W_key(inputs)
+    values = self.W_value(inputs)
+    query = self.W_query(inputs)
+    attn_scores = query @ keys.T
+    attn_weights = torch.softmax(attn_scores / keys.shape[-1] ** 0.5, dim = -1)
+    new_word_vecs = attn_weights @ values
+    return new_word_vecs
+```
+Then we can run above code as before:
+
+```py
+torch.manual_seed(123)
+attn_process = SelfAttentionV2(3, 2)
+attn_process.forward(inputs)
+```
+The output for above code is :
+
+```py
+tensor([[-0.5566, -0.0485],
+        [-0.5592, -0.0489],
+        [-0.5618, -0.0494],
+        [-0.5644, -0.0498],
+        [-0.5670, -0.0502],
+        [-0.5696, -0.0507],
+        [-0.5722, -0.0511],
+        [-0.5748, -0.0515]], grad_fn=<MmBackward0>)
+```
 
