@@ -161,8 +161,11 @@ tensor([[0.2992, 0.8866],
 ```
 As you can see from above result, they are new word vectors for "jim" "and", "john" and so on. Let's see how to enhance to effieciency of above code, here we need to introduce some linear operation
 from linear algebra, you may have seen linear euqtions with multiple variables like:
+
     a_11 * x1 + a_12 * x2 + .... a_1n * x_n + b1  = y_1
+    
     .....
+    
     a_nn * x_1 + a_n2 * x2 + .... a_nn * x_n + bn = y_n
 
 For above equtions, we can represent it by using matrix:
