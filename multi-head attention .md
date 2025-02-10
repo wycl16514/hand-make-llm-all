@@ -190,4 +190,10 @@ new word vecs:tensor([[[-0.7797, -0.0746,  0.5116,  0.3055],
          [-0.9206, -0.0742,  0.1645,  0.0954],
          [-0.6384, -0.0523,  0.6638,  0.3971]]], grad_fn=<CatBackward0>)
 ```
-Compare with previous output, we have two three dimensional matries in the final list, and each matrix conresponding to output of one head.
+Compare with previous output, we have two three dimensional matries in the final list, and each matrix conresponding to output of one head. One of great advantage of multi-head attention is paralle, that's
+why llm like chatgpt can swallow huge volumn of data at the same time and train the model with great intellegent. And in the forwar method of above code, we take each MarkedAttetion instance and compute
+the result sequencely and combine then together, this is not parallel, let's modify the code to make the computation run in parallel.
+
+Do you remember we metioned before, there should not have for loop in deep learning code, for every place using for loop, we can replace them by using matrix operation, and we will do that by following way.
+In each MarkedAttention class, we have one matrix for query, key and value, then if we have two MarkedAttention class instance, we actuall have two matrixs for query, key and value respectively. Therefore
+we can create those matries directly insteand of putting then in MarkedAttention.
