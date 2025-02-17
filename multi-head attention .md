@@ -197,3 +197,14 @@ the result sequencely and combine then together, this is not parallel, let's mod
 Do you remember we metioned before, there should not have for loop in deep learning code, for every place using for loop, we can replace them by using matrix operation, and we will do that by following way.
 In each MarkedAttention class, we have one matrix for query, key and value, then if we have two MarkedAttention class instance, we actuall have two matrixs for query, key and value respectively. Therefore
 we can create those matries directly insteand of putting then in MarkedAttention.
+
+In MultiHeadAttention, we create two instances of MarkedAttention, each instance of MarkedAttention has a W_q matrix, and the same input is send to each MarkedAttention instance, and inside MarkedAttention.
+we compute each v_q inside it as following:
+
+![multi-heads](https://github.com/user-attachments/assets/28a2e95a-ac38-45fe-99c2-7147c98ba5e9)
+
+Next we will take following new step:
+
+![multi-heads (1)](https://github.com/user-attachments/assets/b52f948d-562e-4e0e-a545-ad3b6fb14503)
+
+This time we combine the two W_q matrix from each MarkedAttention instance into one, compute a big query matrix and then spilt the big query matrix into two smaller query matrix as before.
